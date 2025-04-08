@@ -19,12 +19,10 @@ def allocate_test():
             link_demand: List[Tuple[int, int, int, int]] = gpu_allocate(job.gpu_count, group)
             if not link_demand:
                 break
-            b = logic_link_allocate(job.gpu_count, Links, a)
-            if not b:
+            used_kinks = physical_link_allocate(temp_idle_links, link_demand)
+            if not used_kinks:
                 break
-            c = physical_link_allocate(job.gpu_count, Links, b)
-            if not c:
-                break
+            links.allocate_link_for_job(jobs.current_index, used_kinks)
             print(f"Job {jobs.current_index} allocated at time {time}, remaining jobs: {jobs.get_remaining_jobs_count()}")
             jobs.current_index += 1
     time += 1
