@@ -1,6 +1,11 @@
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 from links import Links
+from physical_link_allocate import (
+    AllocationResult,
+    PhysicalLinkeAllocatingAlthrighm,
+    physical_link_allocate,
+)
 
 
 class Groups:
