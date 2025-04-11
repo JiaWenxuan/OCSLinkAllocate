@@ -1,5 +1,9 @@
+import random
 from typing import List, Tuple
 
+from job import Job, Jobs
+
+from groups import Groups
 from links import Links
 from physical_link_allocate import (
     AllocationResult,
@@ -8,32 +12,30 @@ from physical_link_allocate import (
 )
 
 
-class Groups:
-    pass
-
-
 def allocate_test():
-    links = Links()
-
-    jobs = get_jobs()
-    job_index = 0
+    group = Groups()
+    jobs = Jobs()
     time = 0
-    while job_index < len(jobs):
+    while jobs.has_more_jobs():
         free_job_arrive_time()
         while True:
-            job = jobs[job_index]
+            job = jobs.get_next_job()
+            if job is None:
+                break
             # link_demand : [(group_id_1, group_id_2, min_links, max_links), ...]
-            link_demand: List[Tuple[int, int, int, int]] = gpu_and_logic_link_allocate(
-                job, links
+            link_demand: List[Tuple[int, int, int, int]] = gpu_allocate(
+                job.gpu_count, group
             )
             if not link_demand:
                 break
             used_kinks = physical_link_allocate(temp_idle_links, link_demand)
             if not used_kinks:
                 break
-            links.allocate_link_for_job(job_index, used_kinks)
-            print(f"Job {job_index} allocated at time {time}")
-            job_index += 1
+            links.allocate_link_for_job(jobs.current_index, used_kinks)
+            print(
+                f"Job {jobs.current_index} allocated at time {time}, remaining jobs: {jobs.get_remaining_jobs_count()}"
+            )
+            jobs.current_index += 1
     time += 1
 
 
