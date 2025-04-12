@@ -3,6 +3,8 @@ from typing import Dict, List, Tuple
 
 from bitarray import bitarray
 
+from jobs import Job
+
 
 class Links:
     __num_ocs: int
@@ -11,7 +13,7 @@ class Links:
     # (num_group, num_switch_per_group, num_ocs)   (64, 16, 512)
     __idle_links: List[List[bitarray]]
     # {job_id: [(src_group_id, src_switch_id, dst_group_id, dst_switch_id, ocs_id), ...]}
-    __links_for_job: Dict[int, List[Tuple[int, int, int, int, int]]]
+    __links_for_job: Dict[Job, List[Tuple[int, int, int, int, int]]]
 
     def __init__(self):
         self.__num_ocs = 512
@@ -53,25 +55,23 @@ class Links:
             [switch_idle_links.count(1) for switch_idle_links in group_idle_links]
         )
 
-    def allocate_link_for_job(
-        self, job_id, links: List[Tuple[int, int, int, int, int]]
-    ):
+    def allocate_link_for_job(self, job, links: List[Tuple[int, int, int, int, int]]):
         for src_group_id, src_switch_id, dst_group_id, dst_switch_id, ocs_id in links:
             assert self.__idle_links[src_group_id][src_switch_id][ocs_id] == 1
             assert self.__idle_links[dst_group_id][dst_switch_id][ocs_id] == 1
             self.__idle_links[src_group_id][src_switch_id][ocs_id] = 0
             self.__idle_links[dst_group_id][dst_switch_id][ocs_id] = 0
-        self.__links_for_job[job_id] = links
+        self.__links_for_job[job] = links
         return False
 
-    def free_link_for_job(self, job_id):
-        links = self.__links_for_job[job_id]
+    def free_link_for_job(self, job):
+        links = self.__links_for_job[job]
         for src_group_id, src_switch_id, dst_group_id, dst_switch_id, ocs_id in links:
             assert self.__idle_links[src_group_id][src_switch_id][ocs_id] == 0
             assert self.__idle_links[dst_group_id][dst_switch_id][ocs_id] == 0
             self.__idle_links[src_group_id][src_switch_id][ocs_id] = 1
             self.__idle_links[dst_group_id][dst_switch_id][ocs_id] = 1
-        del self.__links_for_job[job_id]
+        del self.__links_for_job[job]
 
     def get_temp_idle_links(self) -> List[List[bitarray]]:
         return copy.deepcopy(self.__idle_links)
