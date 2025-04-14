@@ -1,8 +1,10 @@
 from typing import List, Tuple
+import numpy as np
 
 from groups import Groups
 from jobs import Jobs
 from links import Links
+from gpu_allocate import gpu_allocate
 from physical_link_allocate import (
     AllocationResult,
     PhysicalLinkeAllocatingAlthrighm,
